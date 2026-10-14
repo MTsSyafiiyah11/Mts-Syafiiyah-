@@ -76,14 +76,6 @@ footer{background:#0b3d2a;color:#cfe8da;font-size:11.5px;padding:8px 12px;text-a
       <div style="clear:both;text-align:right;font-size:13px;margin-top:6px"><b>AHMAD HARIS, S.Pd.I</b><br><span class="kecil">Kepala MTs Syafi'iyyah Ngaringan</span></div>
     </div>
     <div class="kartu">
-      <b>Ukuran tulisan</b>
-      <div style="margin-top:6px">
-        <button onclick="ubahUkuran(-1)" style="padding:6px 12px;border:1px solid #00764B;background:#fff;color:#00764B;border-radius:6px">A-</button>
-        <button onclick="ubahUkuran(0)" style="padding:6px 12px;border:1px solid #00764B;background:#fff;color:#00764B;border-radius:6px">A</button>
-        <button onclick="ubahUkuran(1)" style="padding:6px 12px;border:1px solid #00764B;background:#fff;color:#00764B;border-radius:6px">A+</button>
-      </div>
-    </div>
-    <div class="kartu">
       <b>Isi absensi kelas (guru)</b>
       <div class="kecil">Tekan kelas untuk membuka formulir absensi. Setiap wali kelas memakai kode kelasnya masing-masing.</div>
       <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
@@ -511,27 +503,6 @@ function bukaFormAbsensi(kelas){
   window.open(url, "_blank");
 }
 
-// ===== Ukuran tulisan =====
-let SKALA_TULISAN = Number(localStorage.getItem("skala_tulisan") || 0);
-const SKALA_NILAI = [0.9, 1, 1.15, 1.3];
-
-function terapkanUkuran(){
-  const z = SKALA_NILAI[SKALA_TULISAN + 1] || 1;
-  document.documentElement.style.zoom = z;
-  document.querySelectorAll("iframe").forEach(f => {
-    try{ f.contentDocument.documentElement.style.zoom = z; }catch(e){}
-  });
-}
-
-function ubahUkuran(arah){
-  if(arah === 0) SKALA_TULISAN = 1;
-  else SKALA_TULISAN = Math.max(-1, Math.min(2, SKALA_TULISAN + arah));
-  localStorage.setItem("skala_tulisan", String(SKALA_TULISAN));
-  terapkanUkuran();
-}
-
-document.querySelectorAll("iframe").forEach(f => f.addEventListener("load", terapkanUkuran));
-terapkanUkuran();
 
 // ===== Data absensi dan nilai untuk Beranda & statistik =====
 const JENIS_INFO = ["Penilaian Harian","Penilaian Tengah Semester Ganjil","Penilaian Tengah Semester Genap",
