@@ -107,7 +107,7 @@ footer{background:#0b3d2a;color:#cfe8da;font-size:11.5px;padding:8px 12px;text-a
     </div>
     <div class="kartu">
       <b>Jadwal sholat hari ini</b>
-      <div class="kecil">Wilayah Grobogan (perkiraan standar Kemenag RI)</div>
+      <div class="kecil">Wilayah Grobogan (standar Kemenag RI)</div>
       <div id="tanggalHijri" class="kecil" style="font-weight:600;color:#00764B;margin-top:4px"></div>
       <div id="jadwalSholat" class="kecil">memuat...</div>
       <div class="kecil" style="margin-top:6px">Waktu dapat berbeda 1–2 menit dari jadwal resmi. Cek jadwal resmi di <a href="https://bimasislam.kemenag.go.id" target="_blank" rel="noopener">bimasislam.kemenag.go.id</a>.</div>
@@ -675,18 +675,27 @@ async function muatJadwalSholat(){
     const data = await res.json();
     const t = data.data.timings;
     const bersih = v => String(v).replace(/\s*\(.*\)/, "").trim();
-    // Waktu Dhuha: sekitar 15 menit setelah terbit matahari
+    // Waktu Dhuha
     const [jT, mT] = bersih(t.Sunrise).split(":").map(Number);
-    const dhuhaMenit = jT * 60 + mT + 15;
+    const dhuhaMenit = jT * 60 + mT + 20;
     const dhuha = String(Math.floor(dhuhaMenit / 60) % 24).padStart(2, "0") + ":" + String(dhuhaMenit % 60).padStart(2, "0");
     const hijri = data.data.date.hijri;
     const BULAN_HIJRI = ["Muharram","Safar","Rabiul Awal","Rabiul Akhir","Jumadil Awal","Jumadil Akhir","Rajab","Syaban","Ramadhan","Syawal","Zulkaidah","Zulhijah"];
     const tglHijri = hijri.day + " " + BULAN_HIJRI[Number(hijri.month.number) - 1] + " " + hijri.year + " H";
     document.getElementById("tanggalHijri").textContent = tglHijri;
-    box.innerHTML = `<div class="hasil">Subuh <b>${bersih(t.Fajr)}</b> · Terbit ${bersih(t.Sunrise)}</div>` +
-      `<div class="hasil">Dhuha <b>${dhuha}</b> (perkiraan) · Dzuhur <b>${bersih(t.Dhuhr)}</b></div>` +
-      `<div class="hasil">Ashar <b>${bersih(t.Asr)}</b> · Maghrib <b>${bersih(t.Maghrib)}</b></div>` +
-      `<div class="hasil">Isya <b>${bersih(t.Isha)}</b></div>`;
+    const baris = [
+      ["Imsak", t.Imsak],
+      ["Subuh", t.Fajr],
+      ["Terbit", t.Sunrise],
+      ["Dhuha", dhuha],
+      ["Dzuhur", t.Dhuhr],
+      ["Ashar", t.Asr],
+      ["Maghrib", t.Maghrib],
+      ["Isya", t.Isha]
+    ];
+    box.innerHTML = baris.map(([nama, jam]) =>
+      `<div class="hasil" style="display:flex;justify-content:space-between;font-size:15px"><span>${nama}</span><b>${jam === dhuha ? jam : bersih(jam)}</b></div>`
+    ).join("");
   }catch(e){
     box.textContent = "Jadwal belum bisa dimuat. Silakan cek di bimasislam.kemenag.go.id.";
   }
