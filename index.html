@@ -106,6 +106,13 @@ footer{background:#0b3d2a;color:#cfe8da;font-size:11.5px;padding:8px 12px;text-a
       <div id="peringkatHadir" class="kecil">memuat...</div>
     </div>
     <div class="kartu">
+      <b>Jadwal sholat hari ini</b>
+      <div class="kecil">Wilayah Grobogan (perkiraan standar Kemenag RI)</div>
+      <div id="tanggalHijri" class="kecil" style="font-weight:600;color:#00764B;margin-top:4px"></div>
+      <div id="jadwalSholat" class="kecil">memuat...</div>
+      <div class="kecil" style="margin-top:6px">Waktu dapat berbeda 1–2 menit dari jadwal resmi. Cek jadwal resmi di <a href="https://bimasislam.kemenag.go.id" target="_blank" rel="noopener">bimasislam.kemenag.go.id</a>.</div>
+    </div>
+    <div class="kartu">
       <b>Jam layanan</b>
       <div id="statusLayanan" class="kecil">memuat...</div>
       <div class="kecil">Pukul 07.00 – 12.00 WIB. Jumat dan hari libur nasional tutup.</div>
@@ -217,7 +224,7 @@ tampilJamTanggal();
 setInterval(tampilJamTanggal, 1000);
 
 // ===== Statistik sekolah (tab Info) =====
-const SISWA_CSV_INFO = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSaj6YSiHHk_-If4Q44m_ZNU_m1qDFClGs4FF7NMd3p444YQH8keJDR39DOn_LXlzjwqFqASsZ1kK8y/pub?output=csv";
+const SISWA_CSV_INFO = "https://docs.google.com/spreadsheets/d/e/2PACX-1vReMIpRRa_Cl0WJD8uv23rzFvi2Tw6UBzphiSauVNAOIxj0FkPwTcHspoHeZKnjpH5VehowGXseip9M/pub?output=csv";
 const ABSEN_CSV_INFO = [
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vSQrKmcPhq0aQznZfYI7_4Nxow4LBC-KjwKw35HzXYfGhwkL0KPygG9af0Sz0d3go_GU-80bBi4mCr8/pub?output=csv",
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vTxhBPQ0UQpg3SiJyvw35uFABDNePW6YanV5gQYR4uUapgDHwDJsMWypANy9i7NDnz27F-p1_tDRgEh/pub?output=csv",
@@ -652,6 +659,39 @@ function bukaFormSaran(){
   const pesan = "Assalamu'alaikum Wr. Wb.\nSaya ingin menyampaikan saran/masukan untuk MTs Syafi'iyyah Ngaringan:\n\nNama: \nKelas anak: \nSaran: ";
   window.open("https://wa.me/" + NOMOR_SARAN + "?text=" + encodeURIComponent(pesan), "_blank");
 }
+
+// ===== Jadwal sholat (Grobogan, perkiraan standar Kemenag RI) =====
+// Koordinat pusat Kabupaten Grobogan (Purwodadi). Sudut Subuh 20°, Isya 18° (standar Kemenag RI).
+async function muatJadwalSholat(){
+  const box = document.getElementById("jadwalSholat");
+  if(!box) return;
+  const d = new Date();
+  const tgl = String(d.getDate()).padStart(2, "0") + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + d.getFullYear();
+  const url = "https://api.aladhan.com/v1/timings/" + tgl +
+    "?latitude=-7.1&longitude=110.9&method=99&methodSettings=20,null,18&timezonestring=Asia/Jakarta";
+  try{
+    const res = await fetch(url, {cache: "no-store"});
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    const t = data.data.timings;
+    const bersih = v => String(v).replace(/\s*\(.*\)/, "").trim();
+    // Waktu Dhuha: sekitar 15 menit setelah terbit matahari
+    const [jT, mT] = bersih(t.Sunrise).split(":").map(Number);
+    const dhuhaMenit = jT * 60 + mT + 15;
+    const dhuha = String(Math.floor(dhuhaMenit / 60) % 24).padStart(2, "0") + ":" + String(dhuhaMenit % 60).padStart(2, "0");
+    const hijri = data.data.date.hijri;
+    const BULAN_HIJRI = ["Muharram","Safar","Rabiul Awal","Rabiul Akhir","Jumadil Awal","Jumadil Akhir","Rajab","Syaban","Ramadhan","Syawal","Zulkaidah","Zulhijah"];
+    const tglHijri = hijri.day + " " + BULAN_HIJRI[Number(hijri.month.number) - 1] + " " + hijri.year + " H";
+    document.getElementById("tanggalHijri").textContent = tglHijri;
+    box.innerHTML = `<div class="hasil">Subuh <b>${bersih(t.Fajr)}</b> · Terbit ${bersih(t.Sunrise)}</div>` +
+      `<div class="hasil">Dhuha <b>${dhuha}</b> (perkiraan) · Dzuhur <b>${bersih(t.Dhuhr)}</b></div>` +
+      `<div class="hasil">Ashar <b>${bersih(t.Asr)}</b> · Maghrib <b>${bersih(t.Maghrib)}</b></div>` +
+      `<div class="hasil">Isya <b>${bersih(t.Isha)}</b></div>`;
+  }catch(e){
+    box.textContent = "Jadwal belum bisa dimuat. Silakan cek di bimasislam.kemenag.go.id.";
+  }
+}
+muatJadwalSholat();
 </script>
 </body>
 </html>
