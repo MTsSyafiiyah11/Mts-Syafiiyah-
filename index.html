@@ -96,7 +96,7 @@ footer{background:#0b3d2a;color:#cfe8da;font-size:11.5px;padding:8px 12px;text-a
   <button id="b-nilai" onclick="pilih('nilai')">Nilai</button>
   <button id="b-absen" onclick="pilih('absen')">Absensi</button>
   <button id="b-jadwal" onclick="pilih('jadwal')">Jadwal</button>
-  <button id="b-game" onclick="pilih('game')">Game</button>
+  <button id="b-game" onclick="bukaGame()">Game</button>
   <button id="b-kelulusan" onclick="pilih('kelulusan')">Kelulusan</button>
   <button id="b-info" onclick="pilih('info')">Info</button>
 </nav>
@@ -129,7 +129,7 @@ footer{background:#0b3d2a;color:#cfe8da;font-size:11.5px;padding:8px 12px;text-a
     <div class="kartu">
       <b>Game belajar</b>
       <div class="kecil">Quiz huruf hijaiyah, matematika, ibu kota, mata uang, dan kuis mapel MTs.</div>
-      <button onclick="pilih('game')" style="margin-top:8px;padding:9px 12px;background:#00764B;color:#fff;border:none;border-radius:8px;font-size:13px">Buka game</button>
+      <button onclick="bukaGame()" style="margin-top:8px;padding:9px 12px;background:#00764B;color:#fff;border:none;border-radius:8px;font-size:13px">Buka game</button>
     </div>
     <h2>Selamat datang</h2>
     <p>MTs Syafi'iyyah Ngaringan. Silakan pilih menu di atas, atau cari nama siswa di bawah.</p>
@@ -1528,6 +1528,20 @@ const GAME_DAFTAR = {
   qz_tokoh: { nama: "Quiz Tokoh Islam", sub: null }
 };
 
+let GAME_AREA_ID = "game-area";
+function gameArea(){ return document.getElementById(GAME_AREA_ID); }
+
+function bukaGame(){
+  if(GAME && GAME.timer) clearInterval(GAME.timer);
+  GAME = null;
+  pilih("game");
+  gameDaftar();
+}
+
+function gameKembali(){
+  gameDaftar();
+}
+
 const GAME_GRUP = [
   { judul: "Dasar", ids: ["huruf", "matematika", "ibukota", "mata", "kuis"] },
   { judul: "Quiz Umum", ids: ["qz_bendera", "qz_makanan", "qz_tari", "qz_rumah", "qz_musik", "qz_senjata", "qz_bahasa_daerah", "qz_lagu", "qz_pahlawan", "qz_provinsi", "qz_gunung", "qz_hewan", "qz_logo"] },
@@ -1673,7 +1687,7 @@ function gameTampil(){
   const s = GAME.soal[GAME.idx];
   const berwaktu = GAME.tingkat !== "mudah";
   const gaya = s.gaya === "glyph" ? "font-size:72px;line-height:1.5" : "font-size:20px;font-weight:600;line-height:1.4";
-  document.getElementById("game-area").innerHTML =
+  gameArea().innerHTML =
     '<div style="width:100%">' +
       '<div style="text-align:center;' + gaya + '">' + s.tanya + '</div>' +
       '<div class="kecil" style="text-align:center">Soal ' + (GAME.idx + 1) + ' dari ' + GAME.soal.length +
@@ -1739,7 +1753,7 @@ function gameSelesai(){
         '<div class="hasil" style="font-size:13px"><div>' + s.tanya + '</div><small>Kunci: ' + s.benar + '</small></div>'
       ).join("") + '</div>'
     : "";
-  document.getElementById("game-area").innerHTML =
+  gameArea().innerHTML =
     '<div style="text-align:center;width:100%">' +
       '<div style="font-size:28px">' + (bintang > 0 ? "⭐".repeat(bintang) : "☆") + '</div>' +
       '<div style="font-size:40px;font-weight:700;color:#00764B">' + n + ' / ' + total + '</div>' +
@@ -1748,7 +1762,7 @@ function gameSelesai(){
       '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">' +
         (GAME.salah.length ? '<button onclick="gameUlangSalah()" style="padding:9px 14px;background:#b42318;color:#fff;border:none;border-radius:8px;font-size:13px">Ulangi soal yang salah</button>' : '') +
         '<button onclick="gameUlang()" style="padding:9px 14px;background:#00764B;color:#fff;border:none;border-radius:8px;font-size:13px">Main lagi</button>' +
-        '<button onclick="gameDaftar()" style="padding:9px 14px;background:#fff;color:#00764B;border:1px solid #00764B;border-radius:8px;font-size:13px">Pilih game lain</button>' +
+        '<button onclick="gameKembali()" style="padding:9px 14px;background:#fff;color:#00764B;border:1px solid #00764B;border-radius:8px;font-size:13px">Pilih game lain</button>' +
       '</div>' +
     '</div>';
 }
@@ -1756,7 +1770,7 @@ function gameSelesai(){
 function gameDaftar(){
   if(GAME && GAME.timer) clearInterval(GAME.timer);
   GAME = null;
-  document.getElementById("game-area").innerHTML = GAME_GRUP.map(g =>
+  gameArea().innerHTML = GAME_GRUP.map(g =>
     '<div class="kecil" style="margin:10px 0 6px;font-weight:600;color:#00764B">' + g.judul + '</div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
       g.ids.map(id =>
@@ -1785,7 +1799,7 @@ function gameRenderMenu(){
   const tombolMain = (i, label) =>
     '<button onclick="gameMulaiIdx(\'' + GAME_PILIH.id + '\', ' + i + ', \'' + t + '\')" style="padding:10px;background:#00764B;color:#fff;border:none;border-radius:8px;font-size:14px">' + label + '</button>';
   const pilihan = g.sub ? g.sub.map((s, i) => tombolMain(i, s)).join("") : tombolMain(-1, "Mulai");
-  document.getElementById("game-area").innerHTML =
+  gameArea().innerHTML =
     '<b>' + g.nama + '</b>' +
     '<div class="kecil" style="margin:8px 0 6px">Tingkat</div>' +
     '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
@@ -1794,7 +1808,7 @@ function gameRenderMenu(){
       tombolTingkat("sulit", "Sulit (15 soal, 6 pilihan, ada waktu)") +
     '</div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">' + pilihan + '</div>' +
-    '<button onclick="gameDaftar()" style="margin-top:12px;background:none;border:none;color:#00764B;font-size:13px;text-decoration:underline;cursor:pointer;padding:0">← Kembali ke daftar game</button>';
+    (GAME_AREA_ID === "game-area" ? '<button onclick="gameDaftar()" style="margin-top:12px;background:none;border:none;color:#00764B;font-size:13px;text-decoration:underline;cursor:pointer;padding:0">← Kembali ke daftar game</button>' : '');
 }
 
 gameDaftar();
